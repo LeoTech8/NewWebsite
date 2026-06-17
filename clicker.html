@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Clicker</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="click-wrapper">
+            <div class="clickbox">
+                <h1>Clicker Game</h1>
+                <p>Number Go Up!</p>
+                <a href="index.html">Go Home</a>
+                <br>
+                <button id="click-btn">Click Me</button>
+                <p id="clicks-text">0</p>
+            </div>
+        </div>
+    </body>
+    <script>
+    let clicks = 0;
+    const element = document.getElementById('clicks-text');
+    const button = document.getElementById('click-btn');
+
+    // Listen for the click event cleanly in production code
+    button.addEventListener('click', () => {
+        clicks = clicks + 1;
+        element.textContent = clicks;
+    });
+</script>
+    </script>
+</html>

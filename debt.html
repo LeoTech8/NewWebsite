@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debt Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="gamble-wrapper">
+<div class="gamblebox">
+    <h1>Debt Simulator</h1>
+    <br>
+    <button onclick="red()">Red</button>
+    <button onclick="black()">Black</button>
+    <button><a href="index.html">Back</a></button>
+    </a>
+    <br>
+    <br>
+    <div id="output">!!DONT GAMBLE REAL MONEY!!</div>
+    <div id="money">100</div>
+</div>
+</div>
+
+</div>
+
+</body>
+<script>
+let money = 100
+function red() {
+    if (Math.random() < 0.1) {
+    document.getElementById("output").textContent = "Red (You Won!)";
+    money = money + 100
+    document.getElementById("money").textContent = money;
+    }
+    else {
+    document.getElementById("output").textContent = "Black (You Lost...)";
+    money = money - 100
+    document.getElementById("money").textContent = money;
+    }
+
+}
+function black() {
+    if (Math.random() < 0.9) {
+    document.getElementById("output").textContent = "Red (You Lost...)";
+    money = money - 100
+    document.getElementById("money").textContent = money;
+    } 
+    else {
+    document.getElementById("output").textContent = "Black (You Won!)";
+    money = money + 100
+    document.getElementById("money").textContent = money;
+    }
+
+}</script>
+</html>
