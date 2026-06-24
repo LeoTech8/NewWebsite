@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Do You Have A Job</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="gamble-wrapper">
+<div class="gamblebox">
+    <h1>Jobless Test</h1>
+    <br>
+<label for="paid">How much do you get paid per year</label>
+<br>
+<select name="paid" id="paid">
+  <option value="">--Please choose an option--</option>
+  <option value="none">0-100</option>
+  <option value="woman">100-1000</option>
+  <option value="other">1000-10000</option>
+  <option value="other">10000-100000</option>
+  <option value="other">100000+</option>
+</select>
+<br>
+<label for="grass">Have you touched grass?</label>
+<br>
+<select name="grass" id="grass">
+  <option value="">--Please choose an option--</option>
+  <option value="man">Yes</option>
+  <option value="woman">No</option>
+</select>
+<br>
+<label for="marred">Are you married to your couch</label>
+<br>
+<select name="marred" id="marred">
+  <option value="">--Please choose an option--</option>
+  <option value="man">Yes</option>
+  <option value="woman">No</option>
+  <option value="woman">Just Releated</option>
+</select>
+<br>
+<label for="food">How much food do you eat</label>
+<br>
+<select name="food" id="food">
+  <option value="">--Please choose an option--</option>  
+  <option>Starving</option>
+  <option>10kg</option>
+  <option>100kg</option>
+  <option>500kg</option>
+  <option>5t</option>
+  <option>Planet</option>
+  <option>Universe</option>
+  <option>Multiverse</option>
+  <option>Anttimater</option>
+</select>
+<br>
+    <button onclick="findOut()">Find Out!</button>
+    <button><a href="index.html">Back</a></button>
+    </a>
+</div>
+</div>
+
+</div>
+
+</body>
+<script>
+function findOut() {
+    // 1. Move this inside the function so it updates on click
+    const paidAmt = document.getElementById('paid').value;
+    const marred = document.getElementById('marred').value;
+
+    // 2. Use === to check the value instead of assigning it
+    if (paidAmt === 'none') {
+        alert("You are jobless!");
+    } 
+    if (marred === 'man') {
+        alert("You are jobless!");
+    }
+    else {
+        alert("You not jobless!");
+    }
+} // <--- 3. Added the missing closing bracket here
+</script>
+</html>
