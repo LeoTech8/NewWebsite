@@ -36,6 +36,7 @@ a {
 a:hover {
 	color: green;
 	text-decoration: none;
+	cursor: url('cursor/hand.cur'), auto;
 }
 
 button {
@@ -44,7 +45,7 @@ button {
 }
 
 button:hover {
-  cursor: url('cursor/link.cur'), pointer;
+  cursor: url('cursor/hand.cur'), pointer;
   color: green;
   text-decoration: none;
   background-color: black;
