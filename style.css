@@ -16,6 +16,10 @@ html, body {
 	padding: 0;
 }
 
+body:active {
+		cursor: url('cursor/link.cur'), pointer;
+}
+
 .page-wrapper {
     display: flex;
     justify-content: center;
@@ -32,11 +36,9 @@ a {
 a:hover {
 	color: green;
 	text-decoration: none;
-	cursor: url('cursor/link.cur'), pointer;
 }
 
 button {
-  cursor: url('cursor/link.cur'), pointer;
   color: white;
   background-color: black;
 }
