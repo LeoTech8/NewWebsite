@@ -37,8 +37,21 @@
   <option value="woman">You Know Too Much...</option>
 </select>
 <br>
-<label for="food"></label>
+<label for="feathers">Do you have feathers</label>
 <br>
+<select name="feathers" id="feathers">
+  <option value="">--Please choose an option--</option>
+  <option value="yes">Yes</option>
+  <option value="no">No</option>
+</select>
+<br>
+<label for="egg">Do you lay eggs</label>
+<br>
+<select name="egg" id="egg">
+  <option value="">--Please choose an option--</option>
+  <option value="yes">Yes</option>
+  <option value="no">No</option>
+</select>
     <button onclick="findOut()">Find Out!</button>
     <button><a href="index.html">Back</a></button>
     </a>
@@ -53,8 +66,8 @@ function findOut() {
     const bread = document.getElementById('bread').value;     
     const fly = document.getElementById('fly').value;      
     
-    if (bread === 'yes' || fly === 'yes') {         
-        alert("You have been diagnosed with stage 1 pigeon!");     
+    if (bread === 'yes' || fly === 'yes' || feathers === 'yes' || egg = 'yes') {         
+        alert("You have been diagnosed with terminal stage 1 pigeon!");     
     } else {        
         alert("You are not a pigeon");     
     } 
