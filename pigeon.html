@@ -62,15 +62,18 @@
 
 </body>
 <script>
-function findOut() {     
-    const bread = document.getElementById('bread').value;     
-    const fly = document.getElementById('fly').value;      
-    
-    if (bread === 'yes' || fly === 'yes' || feathers === 'yes' || egg = 'yes') {         
-        alert("You have been diagnosed with terminal stage 1 pigeon!");     
-    } else {        
-        alert("You are not a pigeon");     
+function findOut() {         
+    const bread = document.getElementById('bread').value;         
+    const fly = document.getElementById('fly').value;
+    const feathers = document.getElementById('feathers').value; // Added
+    const egg = document.getElementById('egg').value;           // Added
+               
+    if (bread === 'yes' || fly === 'yes' || feathers === 'yes' || egg === 'yes') { // Fixed '=' to '==='
+         alert("You have been diagnosed with terminal stage 1 pigeon!");         
+    } else {
+         alert("You are not a pigeon");         
     } 
 }
 </script>
+
 </html>
