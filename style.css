@@ -8,16 +8,16 @@ body {
 	font-size: 90%;
 }
 
-
 html, body {
-  	cursor: url('cursor/normal.cur'), auto;
+	cursor: url('cursor/normal.cur'), auto;
 	width: 100%;
 	margin: 0;
 	padding: 0;
+	overflow-x: hidden;
 }
 
 body:active {
-		cursor: url('cursor/link.cur'), pointer;
+	cursor: url('cursor/link.cur'), pointer;
 }
 
 .page-wrapper {
@@ -99,7 +99,6 @@ br {
 	overflow: hidden;
 }
 
-
 .four-wrapper {
     display: flex;
     justify-content: center;
@@ -108,16 +107,77 @@ br {
 	overflow: hidden;
 }
 
-/* This applies the black and white scheme to ALL your boxes at once */
+/* Box styling */
 .box1, .box2, .gamblebox, .clickbox, .fourbox {
     background-color: rgb(0, 0, 0);
     border: 3px solid rgb(40, 40, 87);
     color: white;
     padding: 10px;
     width: fit-content;
+    box-sizing: border-box;
 }
 
-/* Keep unique margins separate */
 .box1 { margin: 20px; margin-left: 50px; display: inline-block; }
 .box2 { margin: 10px; margin-left: 10px; display: inline-block; }
 .gamblebox, .clickbox, .fourbox { margin: 10px; }
+
+/* =========================
+   MOBILE AUTO STACK FIX
+   ========================= */
+@media (max-width: 768px) {
+
+	body {
+		font-size: 100%;
+		background-size: cover;
+	}
+
+	.page-wrapper {
+		flex-direction: column;
+		align-items: center;
+		height: auto;
+		min-height: 100dvh;
+		padding: 10px;
+	}
+
+	.gamble-wrapper,
+	.click-wrapper,
+	.four-wrapper {
+		flex-direction: column;
+		height: auto;
+		min-height: 100dvh;
+		padding: 10px;
+	}
+
+	.box1,
+	.box2,
+	.gamblebox,
+	.clickbox,
+	.fourbox {
+		width: 100%;
+		max-width: 95vw;
+		display: block;
+		margin: 10px 0;
+	}
+
+	h1 {
+		font-size: 1.4rem;
+	}
+
+	h2 {
+		font-size: 1.2rem;
+	}
+}
+
+@media (max-width: 400px) {
+	body {
+		font-size: 105%;
+	}
+
+	h1 {
+		font-size: 1.2rem;
+	}
+
+	h2 {
+		font-size: 1rem;
+	}
+}
