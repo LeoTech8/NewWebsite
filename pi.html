@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Pi Generator</title>
+    <!-- Link to your external stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Only utility positioning styles specific to the calculator elements */
+        input#digitsInput {
+            background: #000;
+            color: #fff;
+            border: 2px solid rgb(40, 40, 87);
+            padding: 5px;
+            font-family: 'Comic Sans MS';
+            width: 80px;
+            margin-top: 10px;
+        }
+        
+        button#calcBtn {
+            border: 2px solid rgb(40, 40, 87);
+            padding: 5px 10px;
+            font-family: 'Comic Sans MS';
+            margin-top: 10px;
+        }
+
+        .metrics {
+            margin: 15px 0 5px 0;
+            font-size: 85%;
+            border-top: 1px dashed rgb(40, 40, 87);
+            padding-top: 10px;
+        }
+
+        #output {
+            margin-top: 10px;
+            padding: 8px;
+            background: #0a0a0a;
+            border: 1px solid rgb(40, 40, 87);
+            color: #00ff66; 
+            word-break: break-all;
+            font-family: monospace; 
+            max-height: 200px;
+            overflow-y: auto;
+            width: 320px;
+            max-width: 100%;
+            box-sizing: border-box;
+            text-align: left;
+        }
+        .error { color: #ff5555; }
+    </style>
+</head>
+<body>
+
+    <div class="four-wrapper">
+        <div class="fourbox">
+            <h2 class="title">Pi Generator</h2>
+            <p>Stream real decimal digits in real-time.</p>
+            
+            <label for="digitsInput">Digits: </label>
+            <input type="number" id="digitsInput" value="1000" min="1" max="10000">
+            <button id="calcBtn" onclick="startAnimatedPi()">Stream</button>
+
+            <div class="metrics">
+                Status: <span id="status">Ready</span><br>
+                Found: <span id="digitCount">0</span><br>
+                Time: <span id="timer">0.00</span>s
+            </div>
+
+            <div id="output">Click Stream...</div>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+
+        function* piGibbonsGenerator() {
+            let q = 1n;
+            let r = 0n;
+            let t = 1n;
+            let k = 1n;
+            let n = 3n;
+            let l = 3n;
+
+            while (true) {
+                if (4n * q + r - t < n * t) {
+                    yield Number(n); 
+                    let nr = 10n * (r - n * t);
+                    n = ((10n * (3n * q + r)) / t) - 10n * n;
+                    q *= 10n;
+                    r = nr;
+                } else {
+                    let nr = (2n * q + r) * l;
+                    let nn = (q * (7n * k + 2n) + r * l) / (t * l);
+                    q *= k;
+                    t *= l;
+                    l += 2n;
+                    k += 1n;
+                    n = nn;
+                    r = nr;
+                }
+            }
+        }
+
+        function startAnimatedPi() {
+            if (isRunning) return; 
+
+            const inputElement = document.getElementById("digitsInput");
+            const outputElement = document.getElementById("output");
+            const statusElement = document.getElementById("status");
+            const countElement = document.getElementById("digitCount");
+            const timerElement = document.getElementById("timer");
+            const button = document.getElementById("calcBtn");
+
+            const targetDigits = parseInt(inputElement.value, 10);
+
+            if (isNaN(targetDigits) || targetDigits < 1) {
+                outputElement.innerHTML = "<span class='error'>Invalid.</span>";
+                return;
+            }
+
+            isRunning = true;
+            button.disabled = true;
+            statusElement.innerText = "Streaming...";
+            outputElement.innerText = "";
+            countElement.innerText = "0";
+            
+            const generator = piGibbonsGenerator();
+            const startTime = performance.now();
+            let totalDigitsRendered = 0;
+
+            function renderLoop() {
+                if (!isRunning) return;
+
+                const result = generator.next();
+                let digitStr = String(result.value);
+
+                if (totalDigitsRendered === 0) {
+                    digitStr = digitStr + ".";
+                }
+
+                outputElement.innerText += digitStr;
+                totalDigitsRendered++;
+                countElement.innerText = totalDigitsRendered;
+
+                timerElement.innerText = ((performance.now() - startTime) / 1000).toFixed(2);
+                outputElement.scrollTop = outputElement.scrollHeight;
+
+                if (totalDigitsRendered < targetDigits) {
+                    requestAnimationFrame(renderLoop);
+                } else {
+                    isRunning = false;
+                    button.disabled = false;
+                    statusElement.innerText = "Complete";
+                }
+            }
+
+            requestAnimationFrame(renderLoop);
+        }
+    </script>
+
+</body>
+</html>
