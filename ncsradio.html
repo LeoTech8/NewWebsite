@@ -282,6 +282,7 @@
     let currentVideoId = currentBroadcast.videoId;
     let targetTime = currentBroadcast.seekTime;
     var player;
+    let connectionAttempts = 0;
 
     // 2. Load API Framework safely
     var tag = document.createElement('script');
@@ -300,13 +301,12 @@
           'modestbranding': 1,
           'start': currentBroadcast.seekTime,
           'enablejsapi': 1
-          // 'origin' key removed to permanently prevent GitHub Pages 404 network bug
         },
         events: {
           'onStateChange': onPlayerStateChange
         }
       });
-    }
+    };
 
     function onPlayerStateChange(event) {
       if (event.data == YT.PlayerState.PLAYING) {
@@ -315,7 +315,6 @@
           document.getElementById('track-title').innerText = videoData.title;
           document.getElementById('track-artist').innerText = "By: " + videoData.author;
         }
-        // Force the initial volume slider state sync
         let currentVol = document.getElementById('volume').value;
         player.setVolume(currentVol);
       }
@@ -334,75 +333,39 @@
       }
     }
 
-let connectionAttempts = 0;
-
-function connectToRadio() {
-  // Re-verify calculations to check live timeline positioning
-  const freshSync = getLiveTrackState();
-  
-  // Verify if YouTube objects have compiled successfully yet
-  if (player && typeof player.playVideo === 'function') {
-    // Hide the black starter screen element overlay
-    document.getElementById('unlock-overlay').style.display = 'none';
-    targetTime = freshSync.seekTime;
-    currentVideoId = freshSync.videoId;
-    
-    player.seekTo(freshSync.seekTime, true);
-    player.playVideo();
-
-    // Master Clock Sync Loop (Checks every 1 second)
-    setInterval(function() {
-      targetTime++;
-      const checkSync = getLiveTrackState();
+    // 4. Upgraded Radio Activation Core with Polled Retry Logic
+    function connectToRadio() {
+      const freshSync = getLiveTrackState();
       
-      // Auto-switch track indexes matching global timeline
-      if (checkSync.videoId !== currentVideoId) {
-        currentVideoId = checkSync.videoId;
-        targetTime = checkSync.seekTime;
+      if (player && typeof player.playVideo === 'function') {
+        document.getElementById('unlock-overlay').style.display = 'none';
+        targetTime = freshSync.seekTime;
+        currentVideoId = freshSync.videoId;
         
-        document.getElementById('track-title').innerText = "Buffering next track...";
-        document.getElementById('track-artist').innerText = "Synchronising clock";
-        
-        player.loadVideoById({
-          videoId: checkSync.videoId,
-          startSeconds: checkSync.seekTime
-        });
-      }
+        player.seekTo(freshSync.seekTime, true);
+        player.playVideo();
 
-      // Drift calculation correction framework
-      if (player && typeof player.getCurrentTime === 'function') {
-        const userCurrentTime = player.getCurrentTime();
-        const drift = Math.abs(userCurrentTime - targetTime);
-        document.getElementById('sync-status').innerText = "Drift: " + drift.toFixed(1) + "s";
-        
-        if (drift > 2.5) {
-          player.seekTo(targetTime, true);
-        }
-      }
-    }, 1000);
+        // Master Clock Sync Loop (Checks every 1 second)
+        setInterval(function() {
+          targetTime++;
+          const checkSync = getLiveTrackState();
+          
+          if (checkSync.videoId !== currentVideoId) {
+            currentVideoId = checkSync.videoId;
+            targetTime = checkSync.seekTime;
+            
+            document.getElementById('track-title').innerText = "Buffering next track...";
+            document.getElementById('track-artist').innerText = "Synchronising clock";
+            
+            player.loadVideoById({
+              videoId: checkSync.videoId,
+              startSeconds: checkSync.seekTime
+            });
+          }
 
-  } else {
-    // Retry Loop Handler: If framework isn't initialized yet, wait 300ms and try again
-    connectionAttempts++;
-    document.getElementById('track-title').innerText = "Connecting... (Attempt " + connectionAttempts + "/5)";
-    document.getElementById('track-artist').innerText = "Waking up stream engines";
-
-    if (connectionAttempts < 5) {
-      setTimeout(connectToRadio, 300); // Retry connection cleanly
-    } else {
-      // True failure state fallback if engine fails completely
-      document.getElementById('track-title').innerText = "Initialization Blocked";
-      document.getElementById('track-artist').innerText = "Please disable extensions/AdBlock and refresh.";
-    }
-  }
-}
-
-
-          // Anti-drift Verification
           if (player && typeof player.getCurrentTime === 'function') {
             const userCurrentTime = player.getCurrentTime();
             const drift = Math.abs(userCurrentTime - targetTime);
-            
             document.getElementById('sync-status').innerText = "Drift: " + drift.toFixed(1) + "s";
             
             if (drift > 2.5) {
@@ -410,11 +373,21 @@ function connectToRadio() {
             }
           }
         }, 1000);
+
       } else {
-        document.getElementById('track-title').innerText = "Initialization Blocked";
-        document.getElementById('track-artist').innerText = "API Handshake failed. Please refresh.";
+        connectionAttempts++;
+        document.getElementById('track-title').innerText = "Connecting... (Attempt " + connectionAttempts + "/5)";
+        document.getElementById('track-artist').innerText = "Waking up stream engines";
+
+        if (connectionAttempts < 5) {
+          setTimeout(connectToRadio, 300);
+        } else {
+          document.getElementById('track-title').innerText = "Initialization Blocked";
+          document.getElementById('track-artist').innerText = "Please disable extensions/AdBlock and refresh.";
+        }
       }
     }
   </script>
 </body>
 </html>
+
