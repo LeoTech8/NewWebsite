@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Synced NCS Radio</title>
+</head>
+<body style="background: #f5f5f7; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+
+  <div class="radio-interface" style="font-family: Arial, sans-serif; width: 400px; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center;">
+    
+    <!-- 1. The Visual Canvas Window -->
+    <div id="player-wrapper" style="position: relative; width: 100%; height: 220px; background: #000; border-radius: 8px; overflow: hidden;">
+      <div id="youtube-player"></div>
+      
+      <!-- Click-to-Unlock Overlay -->
+      <div id="unlock-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center;">
+        <button onclick="connectToRadio()" style="padding: 12px 24px; font-size: 16px; font-weight: bold; background: #ff4757; color: white; border: none; border-radius: 6px; cursor: pointer;">
+          ▶ Connect to Live Stream
+        </button>
+      </div>
+      
+      <!-- Transparent click-shield to prevent manual pausing/scrubbing -->
+      <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;"></div>
+    </div>
+
+    <!-- 2. Dynamic Metadata Displays -->
+    <div style="margin-top: 20px;">
+      <h3 id="track-title" style="margin: 5px 0; color: #1d1d1f; font-size: 18px;">Connecting to transmitter...</h3>
+      <p id="track-artist" style="margin: 0; color: #86868b; font-size: 14px;">Synchronising clock</p>
+    </div>
+  </div>
+
+  <script>
+    // 3. Complete Expanded Playlist Array with Exact Track Durations (in seconds)
+    const playlist = [
+      { id: "qY0KEx7f_zY", duration: 208 }, // Cartoon - On & On
+      { id: "J2X5mJ3HDYE", duration: 264 }, // Alan Walker - Fade
+      { id: "3nQNiWdeH7M", duration: 273 }, // DEAF KEV - Invincible
+      { id: "i36Z95861bY", duration: 267 }, // Different Heaven & EH!DE - My Heart
+      { id: "s61vQrR2mYQ", duration: 197 }, // Unknown Brain - Superhero
+      { id: "89IWWVeg80A", duration: 222 }, // Janji - Heroes Tonight
+      { id: "K4O4gTxw1c0", duration: 216 }, // Sub Urban - Cradles
+      { id: "TW9d8vYrVFQ", duration: 184 }, // Lost Sky - Fearless
+      { id: "ux8-Xw0Hj5c", duration: 220 }, // Disfigure - Blank
+      { id: "AOeY-nDp7hI", duration: 198 }  // Electro-Light - Symbolism
+    ];
+
+    // Calculate total runtime of the entire loop
+    const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
+
+    function getLiveTrackState() {
+      // Current Unix timestamp in seconds
+      const currentGlobalSeconds = Math.floor(Date.now() / 1000);
+      
+      // Determine exactly how many seconds we are into the current global loop repetition
+      let timeIntoCurrentLoop = currentGlobalSeconds % TOTAL_PLAYLIST_DURATION;
+      
+      // Step through playlist to locate which song owns this exact second slice
+      for (let i = 0; i < playlist.length; i++) {
+        if (timeIntoCurrentLoop < playlist[i].duration) {
+          return {
+            videoId: playlist[i].id,
+            seekTime: timeIntoCurrentLoop,
+            trackIndex: i
+          };
+        }
+        timeIntoCurrentLoop -= playlist[i].duration;
+      }
+      return { videoId: playlist[0].id, seekTime: 0, trackIndex: 0 };
+    }
+
+    // Initialize tracking references
+    let currentBroadcast = getLiveTrackState();
+    let currentVideoId = currentBroadcast.videoId;
+    let targetTime = currentBroadcast.seekTime;
+    var player;
+
+    // Bind API hook directly to global scope
+    window.onYouTubeIframeAPIReady = function() {
+      console.log("YouTube Framework matched. Initialising station...");
+      player = new YT.Player('youtube-player', {
+        height: '100%',
+        width: '100%',
+        videoId: currentBroadcast.videoId,
+        playerVars: {
+          'controls': 0,
+          'disablekb': 1,
+          'rel': 0,
+          'modestbranding': 1,
+          'start': currentBroadcast.seekTime,
+          'enablejsapi': 1,
+          'origin': window.location.origin
+        },
+        events: {
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerStateChange(event) {
+      // Pull dynamic title text immediately when any track begins playing
+      if (event.data == YT.PlayerState.PLAYING) {
+        var videoData = player.getVideoData();
+        if (videoData && videoData.title) {
+          document.getElementById('track-title').innerText = videoData.title;
+          document.getElementById('track-artist').innerText = "By: " + videoData.author;
+        }
+      }
+    }
+
+    function connectToRadio() {
+      document.getElementById('unlock-overlay').style.display = 'none';
+      
+      const freshSync = getLiveTrackState();
+      targetTime = freshSync.seekTime;
+      currentVideoId = freshSync.videoId;
+      
+      if (player && typeof player.playVideo === 'function') {
+        player.seekTo(freshSync.seekTime, true);
+        player.playVideo();
+
+        // Master loop synchronization interval clock
+        setInterval(function() {
+          targetTime++;
+          
+          // Constantly crosscheck with global timestamp math to capture transitions
+          const checkSync = getLiveTrackState();
+          
+          // Transition Trigger: If math indicates a track change, forcefully reload the canvas
+          if (checkSync.videoId !== currentVideoId) {
+            currentVideoId = checkSync.videoId;
+            targetTime = checkSync.seekTime;
+            
+            document.getElementById('track-title').innerText = "Changing tracks...";
+            document.getElementById('track-artist').innerText = "Synchronising clock";
+            
+            player.loadVideoById({
+              videoId: checkSync.videoId,
+              startSeconds: checkSync.seekTime
+            });
+          }
+
+          // Anti-cheat / buffer recovery: Check sync tolerances every second
+          if (player && typeof player.getCurrentTime === 'function') {
+            const userCurrentTime = player.getCurrentTime();
+            if (Math.abs(userCurrentTime - targetTime) > 2.5) {
+              player.seekTo(targetTime, true);
+            }
+          }
+        }, 1000);
+      } else {
+        document.getElementById('track-title').innerText = "Connection Error";
+        document.getElementById('track-artist').innerText = "Please refresh your page to try again.";
+      }
+    }
+
+    // Force load the engine script
+    var tag = document.createElement('script');
+    tag.src = "https://youtube.com";
+    document.body.appendChild(tag);
+  </script>
+</body>
+</html>
