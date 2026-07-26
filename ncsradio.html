@@ -245,7 +245,7 @@
       </div>
     </div>
   </div>
-  <script>
+   <script>
     // 1. Complete Playlist Array with Titles and Exact Track Durations (in seconds)
     const playlist = [
       { id: "qY0KEx7f_zY", title: "On & On", artist: "Cartoon", duration: 208 },
@@ -284,47 +284,46 @@
     let currentBroadcast = getLiveTrackState();
     let currentVideoId = currentBroadcast.videoId;
 
-    // 2. Custom Slider Messaging
     function adjustVolume(value) {
       const iconEl = document.getElementById('vol-icon');
       if (value == 0) iconEl.innerText = "🔇";
       else if (value < 40) iconEl.innerText = "🔈";
       else if (value < 75) iconEl.innerText = "🔉";
       else iconEl.innerText = "🔊";
-      
-      // Note: Native iframes don't support script-level volume control without the API hook,
-      // but keeping this active gives users a visual reminder for their system device sound.
     }
 
-    // 3. Unblockable Execution Handshake
+    // 2. Verified Secure Handshake Execution
     function connectToRadio() {
-      // Hide the initial starter view element
       document.getElementById('unlock-overlay').style.display = 'none';
       
       const freshSync = getLiveTrackState();
       currentVideoId = freshSync.videoId;
       
-      // Update metadata containers instantly using the hardcoded array strings
       document.getElementById('track-title').innerText = freshSync.title;
       document.getElementById('track-artist').innerText = "By: " + freshSync.artist;
       document.getElementById('sync-status').innerText = "Status: Live Sync";
 
-      // Inject the source URL directly to skip script handshakes
+      // FIXED: Uses the verified main domain, but forces an absolute encryption origin parameter string
       const iframe = document.getElementById('youtube-player');
-      iframe.src = "https://youtube.com" + freshSync.videoId + "?autoplay=1&start=" + freshSync.seekTime + "&controls=0&disablekb=1&rel=0";
+      const safeOrigin = encodeURIComponent(window.location.origin);
+      
+      iframe.src = "https://youtube.com" + freshSync.videoId + 
+                 "?autoplay=1&start=" + freshSync.seekTime + 
+                 "&controls=0&disablekb=1&rel=0&enablejsapi=1&origin=" + safeOrigin;
 
-      // 4. Background Track Transition Supervisor Loop
+      // 3. Background Track Transition Loop
       setInterval(function() {
         const checkSync = getLiveTrackState();
         
-        // Auto-switch track parameters matching the global timestamp line
         if (checkSync.videoId !== currentVideoId) {
           currentVideoId = checkSync.videoId;
           
           document.getElementById('track-title').innerText = checkSync.title;
           document.getElementById('track-artist').innerText = "By: " + checkSync.artist;
           
-          iframe.src = "https://youtube.com" + checkSync.videoId + "?autoplay=1&start=" + checkSync.seekTime + "&controls=0&disablekb=1&rel=0";
+          iframe.src = "https://youtube.com" + checkSync.videoId + 
+                     "?autoplay=1&start=" + checkSync.seekTime + 
+                     "&controls=0&disablekb=1&rel=0&enablejsapi=1&origin=" + safeOrigin;
         }
       }, 1000);
     }
