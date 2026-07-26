@@ -368,15 +368,24 @@ function connectToRadio() {
   document.getElementById('track-artist').innerText = "By: " + freshSync.artist;
   document.getElementById('sync-status').innerText = "Status: Live Sync";
 
+  // FIXED: Ensure player engine exists, unmutes, loads, and forces playback
   if (player && typeof player.loadVideoById === 'function') {
+    player.unMute(); // Clear any browser-enforced muting flags
     player.loadVideoById({
       videoId: freshSync.videoId,
       startSeconds: freshSync.seekTime
     });
+    
+    // FIXED: Explicitly force play command right after loading
+    if (typeof player.playVideo === 'function') {
+      player.playVideo();
+    }
+    
     const currentVol = document.getElementById('volume').value;
     player.setVolume(currentVol);
   }
 
+  // Check loop verification tracking track switches every 1000ms
   setInterval(function() {
     const checkSync = getLiveTrackState();
     
@@ -391,10 +400,15 @@ function connectToRadio() {
           videoId: checkSync.videoId,
           startSeconds: checkSync.seekTime
         });
+        // FIXED: Force playback on track transition change loops
+        if (typeof player.playVideo === 'function') {
+          player.playVideo();
+        }
       }
     }
   }, 1000);
 }
+
 </script>
 </body>
 </html>
