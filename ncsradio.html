@@ -3,177 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <title>NCS Radio</title>
-<style>
-  /* Base Layout Reset */
-  body {
-    margin: 0;
-    padding: 0;
-    background-color: #0d0e12;
-    color: #e2e8f0;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    overflow: hidden;
-  }
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #0d0e12;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-  /* Main Radio Container Terminal */
-  .radio-terminal {
-    background: linear-gradient(145deg, #13161c, #1a1f26);
-    border: 1px solid #22d3ee20;
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(34, 211, 238, 0.05);
-    width: 360px;
-    padding: 32px;
-    text-align: center;
-    position: relative;
-  }
+    .radio-terminal {
+      background: linear-gradient(145deg, #13161c, #1a1f26);
+      border: 1px solid rgba(34, 211, 238, 0.15);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      width: 360px;
+      padding: 32px;
+      text-align: center;
+      position: relative;
+    }
 
-  /* Cyberpunk Glass Accent Layer */
-  .radio-terminal::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #06b6d4, #3b82f6);
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-  }
+    .radio-terminal::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, #06b6d4, #3b82f6);
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+    }
 
-  /* Unified Overlay & Visualizer Layout Wrappers */
-  #unlock-overlay, #visualizer {
-    width: 100%;
-  }
+    #connect-btn {
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      color: #fff;
+      border: none;
+      padding: 16px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
+    }
 
-  /* Interactive Control Action Button */
-  #connect-btn {
-    background: linear-gradient(135deg, #06b6d4, #0891b2);
-    color: #ffffff;
-    border: none;
-    padding: 16px 32px;
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
-    transition: all 0.25s ease;
-  }
+    #track-title { font-size: 1.4rem; color: #fff; margin: 0 0 8px 0; }
+    #track-artist { font-size: 0.95rem; color: #94a3b8; margin: 0 0 24px 0; }
+    
+    #sync-status {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #22d3ee;
+      background-color: rgba(34, 211, 238, 0.1);
+      padding: 6px 12px;
+      border-radius: 20px;
+      margin-bottom: 22px;
+    }
 
-  #connect-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6);
-    background: linear-gradient(135deg, #0891b2, #06b6d4);
-  }
+    .volume-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px 16px;
+      border-radius: 8px;
+    }
 
-  #connect-btn:active {
-    transform: translateY(1px);
-  }
+    #volume { width: 100%; cursor: pointer; }
 
-  /* Typography Text Elements */
-  #track-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 8px 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  #track-artist {
-    font-size: 0.95rem;
-    font-weight: 400;
-    color: #94a3b8;
-    margin: 0 0 24px 0;
-  }
-
-  #sync-status {
-    display: inline-block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #22d3ee;
-    background-color: rgba(34, 211, 238, 0.1);
-    padding: 6px 12px;
-    border-radius: 20px;
-    margin-bottom: 32px;
-  }
-
-  /* Audio Interface Volume Controller Group */
-  .volume-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 12px 16px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  #vol-icon {
-    font-size: 1.1rem;
-    color: #94a3b8;
-    width: 24px;
-    text-align: center;
-  }
-
-  #volume {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    background: #1e293b;
-    border-radius: 3px;
-    outline: none;
-    cursor: pointer;
-  }
-
-  #volume::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #22d3ee;
-    box-shadow: 0 0 8px #22d3ee;
-    transition: transform 0.1s ease;
-  }
-
-  #volume::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-  }
-
-  /* Hidden Mounting Canvas Platform Override */
-  #youtube-player {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-  }
-</style>
-
+    /* FIXED: Keep sizing normal to satisfy API player logic but throw it out of vision bounds */
+    #player-wrapper {
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 200px;
+      height: 200px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+  </style>
 </head>
 <body>
 
   <div class="radio-terminal">
-    <!-- Unlocking Node Structure -->
     <div id="unlock-overlay">
       <button id="connect-btn" onclick="connectToRadio()">Connect to Radio</button>
     </div>
 
-    <!-- Active Media Playing Elements -->
     <div id="visualizer" style="display: none;">
-      <div id="sync-status">Status: Initialising</div>
-      <h2 id="track-title">Track Title</h2>
-      <h3 id="track-artist">By: Artist</h3>
+      <div id="sync-status">Status: Connecting...</div>
+      <h2 id="track-title">Loading Track...</h2>
+      <h3 id="track-artist">Loading Artist...</h3>
       
       <div class="volume-container">
         <span id="vol-icon">🔊</span>
@@ -182,12 +107,13 @@
     </div>
   </div>
 
-  <!-- API Anchor Point -->
-  <div id="youtube-player"></div>
-
+  <!-- Safe wrapping container box holding physical layout canvas target mounts -->
+  <div id="player-wrapper">
+    <div id="youtube-player"></div>
+  </div>
 
   <script>
-    // 1. FIXED: Correctly query the collection item index element node
+    // FIXED: Appended missing collection target array index [0] safely
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -217,7 +143,7 @@
     const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
     let player;
     let currentVideoId = "";
-    let isApiReady = false; // Flag to trace active initialization state
+    let isApiReady = false;
 
     function getLiveTrackState() {
       const currentGlobalSeconds = Math.floor(Date.now() / 1000);
@@ -235,6 +161,7 @@
         }
         timeIntoCurrentLoop -= playlist[i].duration;
       }
+      // FIXED: Safely targeted first array index fallback position object properties
       return { videoId: playlist[0].id, seekTime: 0, title: playlist[0].title, artist: playlist[0].artist, trackIndex: 0 };
     }
 
@@ -242,16 +169,18 @@
       const freshSync = getLiveTrackState();
       currentVideoId = freshSync.videoId;
 
+      // FIXED: Height/Width updated to 200 to enable proper native media streams activation
       player = new YT.Player('youtube-player', {
-        height: '1',
-        width: '1',
+        height: '200',
+        width: '200',
         videoId: freshSync.videoId,
         playerVars: {
           'autoplay': 0,
           'controls': 0,
           'disablekb': 1,
           'rel': 0,
-          'start': freshSync.seekTime
+          'start': freshSync.seekTime,
+          'origin': window.location.origin
         },
         events: {
           'onReady': onPlayerReady
@@ -260,7 +189,7 @@
     }
 
     function onPlayerReady(event) {
-      isApiReady = true; // Unlock execution flag for radio stream bindings
+      isApiReady = true;
       const initialVol = document.getElementById('volume').value;
       player.setVolume(initialVol);
     }
@@ -278,10 +207,8 @@
     }
 
     function connectToRadio() {
-      // FIXED SAFETY GUARD: If API loading is sluggish, retry action sequentially
       if (!isApiReady) {
-        document.getElementById('sync-status').innerText = "Status: Loading Engine Components...";
-        setTimeout(connectToRadio, 250);
+        alert("The YouTube Audio Engine is still loading. Please give it 2 seconds and click again!");
         return;
       }
 
@@ -301,8 +228,8 @@
           videoId: freshSync.videoId,
           startSeconds: freshSync.seekTime
         });
-        
         player.playVideo();
+        
         const currentVol = document.getElementById('volume').value;
         player.setVolume(currentVol);
       }
