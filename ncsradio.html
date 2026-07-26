@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Synced NCS Radio Dashboard</title>
   
-  <!-- 🛑 THE FIX: Enforces browser to send secure referrer tokens to unblock YouTube streams -->
+  <!-- Enforces browser to send secure referrer tokens to unblock YouTube streams -->
   <meta name="referrer" content="strict-origin-when-cross-origin">
   
   <style>
@@ -56,19 +56,28 @@
       position: relative;
       width: 100%;
       height: 220px;
-      background: #000;
+      background: #050505;
       border-radius: 12px;
       overflow: hidden;
       margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .click-shield {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 10;
+    .radio-visualizer {
+      width: 80px;
+      height: 80px;
+      border: 4px solid var(--accent-red);
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 3s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .unlock-overlay {
@@ -202,23 +211,32 @@
       70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 71, 87, 0); }
       100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
     }
+
+    #yt-hidden-container {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
+
+  <div id="yt-hidden-container">
+    <div id="youtube-player"></div>
+  </div>
 
   <div class="dashboard-container">
     <div class="header-badge">NCS Live Broadcast</div>
     
     <div class="player-wrapper">
-      <!-- Clean HTML5 Iframe Target Element -->
-      <iframe id="youtube-player" style="width:100%; height:100%; border:none;" allow="autoplay; encrypted-media"></iframe>
+      <div id="visualizer" class="radio-visualizer"></div>
       
       <div id="unlock-overlay" class="unlock-overlay">
         <button onclick="connectToRadio()" class="connect-btn">▶ Connect to Radio</button>
         <span style="font-size: 12px; color: var(--text-muted);">Click to join live sync</span>
       </div>
-      
-      <div class="click-shield"></div>
     </div>
 
     <div class="track-info">
@@ -249,9 +267,13 @@
       </div>
     </div>
   </div>
-
   <script>
-    // 🛑 FIXED PLAYLIST: Using correct official YouTube video identifiers and absolute run times
+    // Load the official YouTube Iframe Player API script asynchronously
+    const tag = document.createElement('script');
+    tag.src = "https://youtube.com";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
     const playlist = [
       { id: "K4O4gTxw1c0", title: "Cradles", artist: "Sub Urban", duration: 213 },
       { id: "bM7SZ5SBzyY", title: "Fade", artist: "Alan Walker", duration: 264 },
@@ -266,6 +288,8 @@
     ];
 
     const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
+    let player;
+    let currentVideoId = "";
 
     function getLiveTrackState() {
       const currentGlobalSeconds = Math.floor(Date.now() / 1000);
@@ -286,8 +310,33 @@
       return { videoId: playlist[0].id, seekTime: 0, title: playlist[0].title, artist: playlist[0].artist, trackIndex: 0 };
     }
 
-    let currentBroadcast = getLiveTrackState();
-    let currentVideoId = currentBroadcast.videoId;
+    // Required entry function for YouTube API to hook player target binding options
+    function onYouTubeIframeAPIReady() {
+      const freshSync = getLiveTrackState();
+      currentVideoId = freshSync.videoId;
+
+      player = new YT.Player('youtube-player', {
+        height: '1',
+        width: '1',
+        videoId: freshSync.videoId,
+        playerVars: {
+          'autoplay': 0,
+          'controls': 0,
+          'disablekb': 1,
+          'rel': 0,
+          'start': freshSync.seekTime
+        },
+        events: {
+          'onReady': onPlayerReady
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      // Set initial volume state from slider setting
+      const initialVol = document.getElementById('volume').value;
+      player.setVolume(initialVol);
+    }
 
     function adjustVolume(value) {
       const iconEl = document.getElementById('vol-icon');
@@ -295,10 +344,16 @@
       else if (value < 40) iconEl.innerText = "🔈";
       else if (value < 75) iconEl.innerText = "🔉";
       else iconEl.innerText = "🔊";
+
+      // Direct communication loop adjusting player engine audio streams
+      if (player && typeof player.setVolume === 'function') {
+        player.setVolume(value);
+      }
     }
 
     function connectToRadio() {
       document.getElementById('unlock-overlay').style.display = 'none';
+      document.getElementById('visualizer').style.display = 'block';
       
       const freshSync = getLiveTrackState();
       currentVideoId = freshSync.videoId;
@@ -307,14 +362,16 @@
       document.getElementById('track-artist').innerText = "By: " + freshSync.artist;
       document.getElementById('sync-status').innerText = "Status: Live Sync";
 
-      const iframe = document.getElementById('youtube-player');
-      
-      // Enforce clean layout target string assignments
-      iframe.src = "https://www.youtube.com/embed/" + freshSync.videoId + 
-                 "?autoplay=1&start=" + freshSync.seekTime + 
-                 "&controls=0&disablekb=1&rel=0";
+      if (player && typeof player.loadVideoById === 'function') {
+        player.loadVideoById({
+          videoId: freshSync.videoId,
+          startSeconds: freshSync.seekTime
+        });
+        const currentVol = document.getElementById('volume').value;
+        player.setVolume(currentVol);
+      }
 
-      // Supervisor loop running checks every 1000ms
+      // Check loop verification tracking track switches every 1000ms
       setInterval(function() {
         const checkSync = getLiveTrackState();
         
@@ -324,9 +381,12 @@
           document.getElementById('track-title').innerText = checkSync.title;
           document.getElementById('track-artist').innerText = "By: " + checkSync.artist;
           
-          iframe.src = "https://www.youtube.com/embed/" + checkSync.videoId + 
-                     "?autoplay=1&start=" + checkSync.seekTime + 
-                     "&controls=0&disablekb=1&rel=0";
+          if (player && typeof player.loadVideoById === 'function') {
+            player.loadVideoById({
+              videoId: checkSync.videoId,
+              startSeconds: checkSync.seekTime
+        });
+          }
         }
       }, 1000);
     }
