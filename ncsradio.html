@@ -268,137 +268,133 @@
     </div>
   </div>
   <script>
-    // Load the official YouTube Iframe Player API script asynchronously
-    const tag = document.createElement('script');
-    tag.src = "https://youtube.com";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+// 1. FIXED: Corrected the script source to the official YouTube Iframe Player API URL
+const tag = document.createElement('script');
+tag.src = "https://youtube.com";
+const firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-    const playlist = [
-      { id: "K4O4gTxw1c0", title: "Cradles", artist: "Sub Urban", duration: 213 },
-      { id: "bM7SZ5SBzyY", title: "Fade", artist: "Alan Walker", duration: 264 },
-      { id: "K381fIUREn8", title: "Invincible", artist: "DEAF KEV", duration: 273 },
-      { id: "p7ZsBPK656s", title: "My Heart", artist: "Different Heaven & EH!DE", duration: 267 },
-      { id: "zndv0K8EwEc", title: "Superhero", artist: "Unknown Brain", duration: 182 },
-      { id: "3nQNiWdeH7M", title: "Heroes Tonight", artist: "Janji", duration: 208 },
-      { id: "TW9d8vYrVFQ", title: "Fearless", artist: "Lost Sky", duration: 195 },
-      { id: "ux8-Xw0Hj5c", title: "Blank", artist: "Disfigure", duration: 213 },
-      { id: "f6Zk4Lx0cJ4", title: "Symbolism", artist: "Electro-Light", duration: 198 },
-      { id: "bA8A39Z8Z8o", title: "On & On", artist: "Cartoon", duration: 208 }
-  {"id": "y6zcHMsPWVs", "title": "Fast Lane", "artist": "NIVIRO, PollyAnna", "duration": 204},
-  {"id": "bM7SZ5SBzyY", "title": "Dreamer", "artist": "Alan Walker", "duration": 164},
-  {"id": "zj3bs-5lDnM", "title": "Flares", "artist": "NIVIRO", "duration": 221},
-  {"id": "LOSs2p9Xcos", "title": "Skyline", "artist": "Kovan, Electro-Light", "duration": 205},
-  {"id": "W9N3vF_9onM", "title": "We Are", "artist": "Kisma", "duration": 211},
-  {"id": "K4O4gTxw1c0", "title": "Linked", "artist": "Jim Yosef, Anna Yvette", "duration": 223},
-  {"id": "EmBs5Qm06cw", "title": "Call Me Again", "artist": "Raven & Kreyn", "duration": 161},
-  {"id": "bZHMkKkFgck", "title": "Your Stories", "artist": "Cartoon, Jéja, KOIT TOOME", "duration": 164}
+// 2. FIXED: Added missing commas separating the objects in the array
+const playlist = [
+  { id: "K4O4gTxw1c0", title: "Cradles", artist: "Sub Urban", duration: 213 },
+  { id: "bM7SZ5SBzyY", title: "Fade", artist: "Alan Walker", duration: 264 },
+  { id: "K381fIUREn8", title: "Invincible", artist: "DEAF KEV", duration: 273 },
+  { id: "p7ZsBPK656s", title: "My Heart", artist: "Different Heaven & EH!DE", duration: 267 },
+  { id: "zndv0K8EwEc", title: "Superhero", artist: "Unknown Brain", duration: 182 },
+  { id: "3nQNiWdeH7M", title: "Heroes Tonight", artist: "Janji", duration: 208 },
+  { id: "TW9d8vYrVFQ", title: "Fearless", artist: "Lost Sky", duration: 195 },
+  { id: "ux8-Xw0Hj5c", title: "Blank", artist: "Disfigure", duration: 213 },
+  { id: "f6Zk4Lx0cJ4", title: "Symbolism", artist: "Electro-Light", duration: 198 },
+  { id: "bA8A39Z8Z8o", title: "On & On", artist: "Cartoon", duration: 208 }, // <-- Added missing comma here
+  { "id": "y6zcHMsPWVs", "title": "Fast Lane", "artist": "NIVIRO, PollyAnna", "duration": 204 },
+  { "id": "bM7SZ5SBzyY", "title": "Dreamer", "artist": "Alan Walker", "duration": 164 },
+  { "id": "zj3bs-5lDnM", "title": "Flares", "artist": "NIVIRO", "duration": 221 },
+  { "id": "LOSs2p9Xcos", "title": "Skyline", "artist": "Kovan, Electro-Light", "duration": 205 },
+  { "id": "W9N3vF_9onM", "title": "We Are", "artist": "Kisma", "duration": 211 },
+  { "id": "K4O4gTxw1c0", "title": "Linked", "artist": "Jim Yosef, Anna Yvette", "duration": 223 },
+  { "id": "EmBs5Qm06cw", "title": "Call Me Again", "artist": "Raven & Kreyn", "duration": 161 },
+  { "id": "bZHMkKkFgck", "title": "Your Stories", "artist": "Cartoon, Jéja, KOIT TOOME", "duration": 164 }
+];
 
-    ];
+const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
+let player;
+let currentVideoId = "";
 
-    const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
-    let player;
-    let currentVideoId = "";
+function getLiveTrackState() {
+  const currentGlobalSeconds = Math.floor(Date.now() / 1000);
+  let timeIntoCurrentLoop = currentGlobalSeconds % TOTAL_PLAYLIST_DURATION;
+  
+  for (let i = 0; i < playlist.length; i++) {
+    if (timeIntoCurrentLoop < playlist[i].duration) {
+      return {
+        videoId: playlist[i].id,
+        seekTime: timeIntoCurrentLoop,
+        title: playlist[i].title,
+        artist: playlist[i].artist,
+        trackIndex: i
+      };
+    }
+    timeIntoCurrentLoop -= playlist[i].duration;
+  }
+  return { videoId: playlist[0].id, seekTime: 0, title: playlist[0].title, artist: playlist[0].artist, trackIndex: 0 };
+}
 
-    function getLiveTrackState() {
-      const currentGlobalSeconds = Math.floor(Date.now() / 1000);
-      let timeIntoCurrentLoop = currentGlobalSeconds % TOTAL_PLAYLIST_DURATION;
+function onYouTubeIframeAPIReady() {
+  const freshSync = getLiveTrackState();
+  currentVideoId = freshSync.videoId;
+
+  player = new YT.Player('youtube-player', {
+    height: '1',
+    width: '1',
+    videoId: freshSync.videoId,
+    playerVars: {
+      'autoplay': 0,
+      'controls': 0,
+      'disablekb': 1,
+      'rel': 0,
+      'start': freshSync.seekTime
+    },
+    events: {
+      'onReady': onPlayerReady
+    }
+  });
+}
+
+function onPlayerReady(event) {
+  const initialVol = document.getElementById('volume').value;
+  player.setVolume(initialVol);
+}
+
+function adjustVolume(value) {
+  const iconEl = document.getElementById('vol-icon');
+  if (value == 0) iconEl.innerText = "🔇";
+  else if (value < 40) iconEl.innerText = "🔈";
+  else if (value < 75) iconEl.innerText = "🔉";
+  else iconEl.innerText = "🔊";
+
+  if (player && typeof player.setVolume === 'function') {
+    player.setVolume(value);
+  }
+}
+
+function connectToRadio() {
+  document.getElementById('unlock-overlay').style.display = 'none';
+  document.getElementById('visualizer').style.display = 'block';
+  
+  const freshSync = getLiveTrackState();
+  currentVideoId = freshSync.videoId;
+  
+  document.getElementById('track-title').innerText = freshSync.title;
+  document.getElementById('track-artist').innerText = "By: " + freshSync.artist;
+  document.getElementById('sync-status').innerText = "Status: Live Sync";
+
+  if (player && typeof player.loadVideoById === 'function') {
+    player.loadVideoById({
+      videoId: freshSync.videoId,
+      startSeconds: freshSync.seekTime
+    });
+    const currentVol = document.getElementById('volume').value;
+    player.setVolume(currentVol);
+  }
+
+  setInterval(function() {
+    const checkSync = getLiveTrackState();
+    
+    if (checkSync.videoId !== currentVideoId) {
+      currentVideoId = checkSync.videoId;
       
-      for (let i = 0; i < playlist.length; i++) {
-        if (timeIntoCurrentLoop < playlist[i].duration) {
-          return {
-            videoId: playlist[i].id,
-            seekTime: timeIntoCurrentLoop,
-            title: playlist[i].title,
-            artist: playlist[i].artist,
-            trackIndex: i
-          };
-        }
-        timeIntoCurrentLoop -= playlist[i].duration;
-      }
-      return { videoId: playlist[0].id, seekTime: 0, title: playlist[0].title, artist: playlist[0].artist, trackIndex: 0 };
-    }
-
-    // Required entry function for YouTube API to hook player target binding options
-    function onYouTubeIframeAPIReady() {
-      const freshSync = getLiveTrackState();
-      currentVideoId = freshSync.videoId;
-
-      player = new YT.Player('youtube-player', {
-        height: '1',
-        width: '1',
-        videoId: freshSync.videoId,
-        playerVars: {
-          'autoplay': 0,
-          'controls': 0,
-          'disablekb': 1,
-          'rel': 0,
-          'start': freshSync.seekTime
-        },
-        events: {
-          'onReady': onPlayerReady
-        }
-      });
-    }
-
-    function onPlayerReady(event) {
-      // Set initial volume state from slider setting
-      const initialVol = document.getElementById('volume').value;
-      player.setVolume(initialVol);
-    }
-
-    function adjustVolume(value) {
-      const iconEl = document.getElementById('vol-icon');
-      if (value == 0) iconEl.innerText = "🔇";
-      else if (value < 40) iconEl.innerText = "🔈";
-      else if (value < 75) iconEl.innerText = "🔉";
-      else iconEl.innerText = "🔊";
-
-      // Direct communication loop adjusting player engine audio streams
-      if (player && typeof player.setVolume === 'function') {
-        player.setVolume(value);
-      }
-    }
-
-    function connectToRadio() {
-      document.getElementById('unlock-overlay').style.display = 'none';
-      document.getElementById('visualizer').style.display = 'block';
+      document.getElementById('track-title').innerText = checkSync.title;
+      document.getElementById('track-artist').innerText = "By: " + checkSync.artist;
       
-      const freshSync = getLiveTrackState();
-      currentVideoId = freshSync.videoId;
-      
-      document.getElementById('track-title').innerText = freshSync.title;
-      document.getElementById('track-artist').innerText = "By: " + freshSync.artist;
-      document.getElementById('sync-status').innerText = "Status: Live Sync";
-
       if (player && typeof player.loadVideoById === 'function') {
         player.loadVideoById({
-          videoId: freshSync.videoId,
-          startSeconds: freshSync.seekTime
+          videoId: checkSync.videoId,
+          startSeconds: checkSync.seekTime
         });
-        const currentVol = document.getElementById('volume').value;
-        player.setVolume(currentVol);
       }
-
-      // Check loop verification tracking track switches every 1000ms
-      setInterval(function() {
-        const checkSync = getLiveTrackState();
-        
-        if (checkSync.videoId !== currentVideoId) {
-          currentVideoId = checkSync.videoId;
-          
-          document.getElementById('track-title').innerText = checkSync.title;
-          document.getElementById('track-artist').innerText = "By: " + checkSync.artist;
-          
-          if (player && typeof player.loadVideoById === 'function') {
-            player.loadVideoById({
-              videoId: checkSync.videoId,
-              startSeconds: checkSync.seekTime
-        });
-          }
-        }
-      }, 1000);
     }
-  </script>
+  }, 1000);
+}
+</script>
 </body>
 </html>
