@@ -260,16 +260,10 @@
     </div>
   </div>
   <script>
-    // 🛑 THE SYSTEM FIX: Safely initializes the YouTube engine API without parentNode errors
+    // 🛑 THE DEFINITIVE FIX: Direct header mounting completely bypasses MIME and script errors
     const tag = document.createElement('script');
     tag.src = "https://youtube.com";
-    
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    if (firstScriptTag && firstScriptTag.parentNode) {
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    } else {
-      document.head.appendChild(tag);
-    }
+    document.head.appendChild(tag);
 
     const playlist = [
       { id: "y6zcHMsPWVs", title: "Fast Lane", artist: "NIVIRO, PollyAnna", duration: 204 },
@@ -284,7 +278,6 @@
 
     const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
     
-    // 🛑 SCOPE INITIALIZATION FIX: State tracking tags declared upfront
     let radioActive = false;
     let player = null;
     let currentVideoId = "";
@@ -392,6 +385,3 @@
 </body>
 </html>
 
-  </script>
-</body>
-</html>
