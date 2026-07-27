@@ -260,9 +260,16 @@
     </div>
   </div>
   <script>
+      let timeIntoCurrentLoop = currentGlobalSeconds % TOTAL_PLAYLIST_DURATION;
+      
+      for (let i = 0; i < playlist.length; i++) {
+        if (timeIntoCurrentLoop < playlist[i].duration) {
+          return {
+            videoId: playlist[i].id,<script>
     // 🛑 THE DEFINITIVE FIX: Direct header mounting completely bypasses MIME and script errors
     const tag = document.createElement('script');
-    tag.src = "https://youtube.com";
+    tag.src = "https://www.youtube.com/iframe_api";
+
     document.head.appendChild(tag);
 
     const playlist = [
@@ -284,12 +291,6 @@
 
     function getLiveTrackState() {
       const currentGlobalSeconds = Math.floor(Date.now() / 1000);
-      let timeIntoCurrentLoop = currentGlobalSeconds % TOTAL_PLAYLIST_DURATION;
-      
-      for (let i = 0; i < playlist.length; i++) {
-        if (timeIntoCurrentLoop < playlist[i].duration) {
-          return {
-            videoId: playlist[i].id,
             seekTime: timeIntoCurrentLoop,
             title: playlist[i].title,
             artist: playlist[i].artist,
