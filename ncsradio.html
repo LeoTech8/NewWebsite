@@ -260,9 +260,10 @@
     </div>
   </div>
   <script>
-    // 🛑 FIXED: Uses document.head fallback append to prevent "insertBefore undefined" on raw pages
+    // 🛑 THE SYSTEM FIX: Safely initializes the YouTube engine API without parentNode errors
     const tag = document.createElement('script');
     tag.src = "https://youtube.com";
+    
     const firstScriptTag = document.getElementsByTagName('script')[0];
     if (firstScriptTag && firstScriptTag.parentNode) {
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
@@ -283,9 +284,9 @@
 
     const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
     
-    // 🛑 FIXED: Defined variable indicators upfront before functional calls execute
+    // 🛑 SCOPE INITIALIZATION FIX: State tracking tags declared upfront
     let radioActive = false;
-    let player;
+    let player = null;
     let currentVideoId = "";
 
     function getLiveTrackState() {
@@ -387,6 +388,10 @@
         }
       }, 1500);
     }
+  </script>
+</body>
+</html>
+
   </script>
 </body>
 </html>
