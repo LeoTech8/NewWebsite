@@ -260,11 +260,15 @@
     </div>
   </div>
   <script>
-    // Load the official YouTube Iframe Player API script asynchronously
+    // 🛑 FIXED: Uses document.head fallback append to prevent "insertBefore undefined" on raw pages
     const tag = document.createElement('script');
     tag.src = "https://youtube.com";
-    const firstScriptTag = document.getElementsByTagName('script');
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    if (firstScriptTag && firstScriptTag.parentNode) {
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    } else {
+      document.head.appendChild(tag);
+    }
 
     const playlist = [
       { id: "y6zcHMsPWVs", title: "Fast Lane", artist: "NIVIRO, PollyAnna", duration: 204 },
@@ -278,9 +282,11 @@
     ];
 
     const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
+    
+    // 🛑 FIXED: Defined variable indicators upfront before functional calls execute
+    let radioActive = false;
     let player;
     let currentVideoId = "";
-    let radioActive = false;
 
     function getLiveTrackState() {
       const currentGlobalSeconds = Math.floor(Date.now() / 1000);
@@ -305,7 +311,6 @@
       const freshSync = getLiveTrackState();
       currentVideoId = freshSync.videoId;
 
-      // Mounts directly to the user-visible wrapper with controls fully disabled
       player = new YT.Player('youtube-player', {
         height: '100%',
         width: '100%',
@@ -333,7 +338,6 @@
     }
 
     function onPlayerStateChange(event) {
-      // Forcibly unpauses or syncs if the user somehow executes a command or stream changes
       if (radioActive && (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED)) {
         forceResync();
       }
