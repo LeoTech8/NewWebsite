@@ -2,148 +2,285 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>NCS Radio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Synced NCS Radio Dashboard</title>
+  
+  <!-- Enforces browser to send secure referrer tokens to unblock YouTube streams -->
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  
   <style>
+    :root {
+      --bg-dark: #121214;
+      --panel-dark: #1c1c1f;
+      --accent-red: #ff4757;
+      --text-main: #f5f5f7;
+      --text-muted: #86868b;
+    }
+
     body {
-      margin: 0;
-      padding: 0;
-      background-color: #0d0e12;
-      color: #e2e8f0;
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      margin: 0;
+      padding: 20px;
     }
 
-    .radio-terminal {
-      background: linear-gradient(145deg, #13161c, #1a1f26);
-      border: 1px solid rgba(34, 211, 238, 0.15);
+    .dashboard-container {
+      width: 100%;
+      max-width: 440px;
+      background: var(--panel-dark);
       border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-      width: 360px;
-      padding: 32px;
-      text-align: center;
-      position: relative;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      padding: 24px;
+      box-sizing: border-box;
     }
 
-    .radio-terminal::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; height: 4px;
-      background: linear-gradient(90deg, #06b6d4, #3b82f6);
-      border-top-left-radius: 16px;
-      border-top-right-radius: 16px;
-    }
-
-    #connect-btn {
-      background: linear-gradient(135deg, #06b6d4, #0891b2);
-      color: #fff;
-      border: none;
-      padding: 16px 32px;
-      font-size: 1rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
-    }
-
-    #track-title { font-size: 1.4rem; color: #fff; margin: 0 0 8px 0; }
-    #track-artist { font-size: 0.95rem; color: #94a3b8; margin: 0 0 24px 0; }
-    
-    #sync-status {
+    .header-badge {
       display: inline-block;
-      font-size: 0.75rem;
-      font-weight: 600;
+      background: rgba(255, 71, 87, 0.15);
+      color: var(--accent-red);
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      color: #22d3ee;
-      background-color: rgba(34, 211, 238, 0.1);
+      letter-spacing: 1.5px;
       padding: 6px 12px;
       border-radius: 20px;
-      margin-bottom: 22px;
+      margin-bottom: 16px;
+    }
+
+    .player-wrapper {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    /* 🛑 THE CLICK SHIELD: Invisible layer that blocks clicks to prevent timeline skipping */
+    .click-shield {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      background: transparent;
+      cursor: not-allowed;
+    }
+
+    .unlock-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 20;
+      background: rgba(18, 18, 20, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .connect-btn {
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 700;
+      background: var(--accent-red);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .connect-btn:hover {
+      transform: scale(1.03);
+      background: #ff5e6c;
+    }
+
+    .track-info {
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .track-title {
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-artist {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .controls-panel {
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .volume-container {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 12px;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 12px 16px;
-      border-radius: 8px;
     }
 
-    #volume { width: 100%; cursor: pointer; }
+    .volume-icon {
+      font-size: 18px;
+      color: var(--text-muted);
+      width: 24px;
+    }
 
-    /* FIXED: Keep sizing normal to satisfy API player logic but throw it out of vision bounds */
-    #player-wrapper {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-      width: 200px;
-      height: 200px;
-      overflow: hidden;
-      pointer-events: none;
+    .volume-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #3a3a3c;
+      outline: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .volume-slider::-webkit-slider-thumb:hover {
+      background: var(--accent-red);
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-red);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+      animation: pulse 1.6s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 71, 87, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+    }
+
+    #youtube-player {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
   </style>
 </head>
 <body>
 
-  <div class="radio-terminal">
-    <div id="unlock-overlay">
-      <button id="connect-btn" onclick="connectToRadio()">Connect to Radio</button>
+  <div class="dashboard-container">
+    <div class="header-badge">NCS Live Broadcast</div>
+    
+    <div class="player-wrapper">
+      <!-- Visible YouTube Iframe mount container -->
+      <div id="youtube-player"></div>
+      
+      <!-- Click shield sits above the iframe to trap mouse gestures -->
+      <div class="click-shield"></div>
+      
+      <div id="unlock-overlay" class="unlock-overlay">
+        <button onclick="connectToRadio()" class="connect-btn">▶ Connect to Radio</button>
+        <span style="font-size: 12px; color: var(--text-muted);">Click to join live sync</span>
+      </div>
     </div>
 
-    <div id="visualizer" style="display: none;">
-      <div id="sync-status">Status: Connecting...</div>
-      <h2 id="track-title">Loading Track...</h2>
-      <h3 id="track-artist">Loading Artist...</h3>
-      
+    <div class="track-info">
+      <h3 id="track-title" class="track-title">Live Radio Stream</h3>
+      <p id="track-artist" class="track-artist">Click connect to unmute audio</p>
+    </div>
+
+    <div class="controls-panel">
       <div class="volume-container">
-        <span id="vol-icon">🔊</span>
-        <input type="range" id="volume" min="0" max="100" value="50" oninput="adjustVolume(this.value)">
+        <span id="vol-icon" class="volume-icon">🔊</span>
+        <input 
+          type="range" 
+          id="volume" 
+          class="volume-slider" 
+          min="0" 
+          max="100" 
+          value="80" 
+          oninput="adjustVolume(this.value)"
+        >
+      </div>
+
+      <div class="status-row">
+        <div class="status-indicator">
+          <div class="pulse-dot"></div>
+          <span>On Air (Global Sync)</span>
+        </div>
+        <div id="sync-status">Status: Ready</div>
       </div>
     </div>
   </div>
-
-  <!-- Safe wrapping container box holding physical layout canvas target mounts -->
-  <div id="player-wrapper">
-    <div id="youtube-player"></div>
-  </div>
-
   <script>
-    // FIXED: Appended missing collection target array index [0] safely
+    // Load the official YouTube Iframe Player API script asynchronously
     const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
+    tag.src = "https://youtube.com";
+    const firstScriptTag = document.getElementsByTagName('script');
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     const playlist = [
-      { id: "K4O4gTxw1c0", title: "Cradles", artist: "Sub Urban", duration: 213 },
-      { id: "bM7SZ5SBzyY", title: "Fade", artist: "Alan Walker", duration: 264 },
-      { id: "K381fIUREn8", title: "Invincible", artist: "DEAF KEV", duration: 273 },
-      { id: "p7ZsBPK656s", title: "My Heart", artist: "Different Heaven & EH!DE", duration: 267 },
-      { id: "zndv0K8EwEc", title: "Superhero", artist: "Unknown Brain", duration: 182 },
-      { id: "3nQNiWdeH7M", title: "Heroes Tonight", artist: "Janji", duration: 208 },
-      { id: "TW9d8vYrVFQ", title: "Fearless", artist: "Lost Sky", duration: 195 },
-      { id: "ux8-Xw0Hj5c", title: "Blank", artist: "Disfigure", duration: 213 },
-      { id: "f6Zk4Lx0cJ4", title: "Symbolism", artist: "Electro-Light", duration: 198 },
-      { id: "bA8A39Z8Z8o", title: "On & On", artist: "Cartoon", duration: 208 }, 
-      { "id": "y6zcHMsPWVs", "title": "Fast Lane", "artist": "NIVIRO, PollyAnna", "duration": 204 },
-      { "id": "bM7SZ5SBzyY", "title": "Dreamer", "artist": "Alan Walker", "duration": 164 },
-      { "id": "zj3bs-5lDnM", "title": "Flares", "artist": "NIVIRO", "duration": 221 },
-      { "id": "LOSs2p9Xcos", "title": "Skyline", "artist": "Kovan, Electro-Light", "duration": 205 },
-      { "id": "W9N3vF_9onM", "title": "We Are", "artist": "Kisma", "duration": 211 },
-      { "id": "K4O4gTxw1c0", "title": "Linked", "artist": "Jim Yosef, Anna Yvette", "duration": 223 },
-      { "id": "EmBs5Qm06cw", "title": "Call Me Again", "artist": "Raven & Kreyn", "duration": 161 },
-      { "id": "bZHMkKkFgck", "title": "Your Stories", "artist": "Cartoon, Jéja, KOIT TOOME", "duration": 164 }
+      { id: "y6zcHMsPWVs", title: "Fast Lane", artist: "NIVIRO, PollyAnna", duration: 204 },
+      { id: "bM7SZ5SBzyY", title: "Dreamer", artist: "Alan Walker", duration: 164 },
+      { id: "zj3bs-5lDnM", title: "Flares", artist: "NIVIRO", duration: 221 },
+      { id: "LOSs2p9Xcos", title: "Skyline", artist: "Kovan, Electro-Light", duration: 205 },
+      { id: "W9N3vF_9onM", title: "We Are", artist: "Kisma", duration: 211 },
+      { id: "K4O4gTxw1c0", title: "Linked", artist: "Jim Yosef, Anna Yvette", duration: 223 },
+      { id: "EmBs5Qm06cw", title: "Call Me Again", artist: "Raven & Kreyn", duration: 161 },
+      { id: "bZHMkKkFgck", title: "Your Stories", artist: "Cartoon, Jéja, KOIT TOOME", duration: 164 }
     ];
 
     const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
     let player;
     let currentVideoId = "";
-    let isApiReady = false;
+    let radioActive = false;
 
     function getLiveTrackState() {
       const currentGlobalSeconds = Math.floor(Date.now() / 1000);
@@ -161,7 +298,6 @@
         }
         timeIntoCurrentLoop -= playlist[i].duration;
       }
-      // FIXED: Safely targeted first array index fallback position object properties
       return { videoId: playlist[0].id, seekTime: 0, title: playlist[0].title, artist: playlist[0].artist, trackIndex: 0 };
     }
 
@@ -169,10 +305,10 @@
       const freshSync = getLiveTrackState();
       currentVideoId = freshSync.videoId;
 
-      // FIXED: Height/Width updated to 200 to enable proper native media streams activation
+      // Mounts directly to the user-visible wrapper with controls fully disabled
       player = new YT.Player('youtube-player', {
-        height: '200',
-        width: '200',
+        height: '100%',
+        width: '100%',
         videoId: freshSync.videoId,
         playerVars: {
           'autoplay': 0,
@@ -180,18 +316,27 @@
           'disablekb': 1,
           'rel': 0,
           'start': freshSync.seekTime,
-          'origin': window.location.origin
+          'enablejsapi': 1,
+          'iv_load_policy': 3,
+          'fs': 0
         },
         events: {
-          'onReady': onPlayerReady
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
         }
       });
     }
 
     function onPlayerReady(event) {
-      isApiReady = true;
       const initialVol = document.getElementById('volume').value;
       player.setVolume(initialVol);
+    }
+
+    function onPlayerStateChange(event) {
+      // Forcibly unpauses or syncs if the user somehow executes a command or stream changes
+      if (radioActive && (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED)) {
+        forceResync();
+      }
     }
 
     function adjustVolume(value) {
@@ -206,52 +351,37 @@
       }
     }
 
-    function connectToRadio() {
-      if (!isApiReady) {
-        alert("The YouTube Audio Engine is still loading. Please give it 2 seconds and click again!");
-        return;
-      }
-
-      document.getElementById('unlock-overlay').style.display = 'none';
-      document.getElementById('visualizer').style.display = 'block';
-      
+    function forceResync() {
       const freshSync = getLiveTrackState();
       currentVideoId = freshSync.videoId;
       
       document.getElementById('track-title').innerText = freshSync.title;
       document.getElementById('track-artist').innerText = "By: " + freshSync.artist;
-      document.getElementById('sync-status').innerText = "Status: Live Sync";
+      document.getElementById('sync-status').innerText = "Status: Re-syncing...";
 
       if (player && typeof player.loadVideoById === 'function') {
-        player.unMute();
         player.loadVideoById({
           videoId: freshSync.videoId,
           startSeconds: freshSync.seekTime
         });
         player.playVideo();
-        
-        const currentVol = document.getElementById('volume').value;
-        player.setVolume(currentVol);
+        document.getElementById('sync-status').innerText = "Status: Live Sync";
       }
+    }
+
+    function connectToRadio() {
+      radioActive = true;
+      document.getElementById('unlock-overlay').style.display = 'none';
+      forceResync();
 
       setInterval(function() {
+        if (!radioActive) return;
         const checkSync = getLiveTrackState();
         
         if (checkSync.videoId !== currentVideoId) {
-          currentVideoId = checkSync.videoId;
-          
-          document.getElementById('track-title').innerText = checkSync.title;
-          document.getElementById('track-artist').innerText = "By: " + checkSync.artist;
-          
-          if (player && typeof player.loadVideoById === 'function') {
-            player.loadVideoById({
-              videoId: checkSync.videoId,
-              startSeconds: checkSync.seekTime
-            });
-            player.playVideo();
-          }
+          forceResync();
         }
-      }, 1000);
+      }, 1500);
     }
   </script>
 </body>
