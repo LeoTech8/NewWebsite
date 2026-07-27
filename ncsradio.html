@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Synced NCS Radio Dashboard</title>
-  
-  <!-- Enforces browser to send secure referrer tokens to unblock YouTube streams -->
+  <title>NCS Radio</title>
+
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  
+
   <style>
     :root {
       --bg-dark: #121214;
@@ -34,14 +33,14 @@
       max-width: 440px;
       background: var(--panel-dark);
       border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
       padding: 24px;
       box-sizing: border-box;
     }
 
     .header-badge {
       display: inline-block;
-      background: rgba(255, 71, 87, 0.15);
+      background: rgba(255,71,87,.15);
       color: var(--accent-red);
       font-size: 11px;
       font-weight: 700;
@@ -62,13 +61,9 @@
       margin-bottom: 20px;
     }
 
-    /* THE CLICK SHIELD: Invisible layer that blocks clicks to prevent timeline skipping */
     .click-shield {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       z-index: 10;
       background: transparent;
       cursor: not-allowed;
@@ -76,65 +71,53 @@
 
     .unlock-overlay {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       z-index: 20;
-      background: rgba(18, 18, 20, 0.95);
+      background: rgba(18,18,20,.95);
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 12px;
     }
 
     .connect-btn {
       padding: 14px 28px;
       font-size: 16px;
-      font-weight: 700;
-      background: var(--accent-red);
-      color: white;
+      font-weight: bold;
       border: none;
       border-radius: 30px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
-      transition: transform 0.2s, background 0.2s;
+      color: white;
+      background: var(--accent-red);
+      box-shadow: 0 4px 15px rgba(255,71,87,.4);
     }
 
     .connect-btn:hover {
       transform: scale(1.03);
-      background: #ff5e6c;
     }
 
     .track-info {
-      text-align: left;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .track-title {
-      margin: 0 0 6px 0;
+      margin: 0 0 5px;
       font-size: 20px;
-      font-weight: 600;
-      color: var(--text-main);
-      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .track-artist {
       margin: 0;
-      font-size: 14px;
       color: var(--text-muted);
     }
 
     .controls-panel {
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,.03);
       border-radius: 12px;
       padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
     }
 
     .volume-container {
@@ -143,46 +126,18 @@
       gap: 12px;
     }
 
-    .volume-icon {
-      font-size: 18px;
-      color: var(--text-muted);
-      width: 24px;
-    }
-
     .volume-slider {
       flex: 1;
-      -webkit-appearance: none;
-      appearance: none;
-      width: 100%;
-      height: 6px;
-      border-radius: 3px;
-      background: #3a3a3c;
-      outline: none;
-    }
-
-    .volume-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--text-main);
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .volume-slider::-webkit-slider-thumb:hover {
-      background: var(--accent-red);
     }
 
     .status-row {
       display: flex;
       justify-content: space-between;
+      margin-top: 15px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,.05);
       font-size: 12px;
       color: var(--text-muted);
-      border-top: 1px solid rgba(255,255,255,0.05);
-      padding-top: 12px;
-      margin-top: 4px;
     }
 
     .status-indicator {
@@ -194,187 +149,606 @@
     .pulse-dot {
       width: 8px;
       height: 8px;
-      background: var(--accent-red);
       border-radius: 50%;
-      box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
-      animation: pulse 1.6s infinite;
+      background: var(--accent-red);
+      animation: pulse 1.5s infinite;
     }
 
     @keyframes pulse {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 71, 87, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+      0% {transform:scale(.95);}
+      50% {transform:scale(1.2);}
+      100% {transform:scale(.95);}
     }
 
     #youtube-player {
-      width: 100%;
-      height: 100%;
-      border: none;
+      width:100%;
+      height:100%;
     }
   </style>
 </head>
+
 <body>
 
-  <div class="dashboard-container">
-    <div class="header-badge">NCS Live Broadcast</div>
-    
-    <div class="player-wrapper">
-      <div id="youtube-player"></div>
-      <div class="click-shield"></div>
-      
-      <div id="unlock-overlay" class="unlock-overlay">
-        <button onclick="connectToRadio()" class="connect-btn">▶ Connect to Radio</button>
-        <span style="font-size: 12px; color: var(--text-muted);">Click to join live sync</span>
-      </div>
-    </div>
+<div class="dashboard-container">
 
-    <div class="track-info">
-      <h3 id="track-title" class="track-title">Live Radio Stream</h3>
-      <p id="track-artist" class="track-artist">Click connect to unmute audio</p>
-    </div>
+<div class="header-badge">
+NCS Radio
+</div>
 
-    <div class="controls-panel">
-      <div class="volume-container">
-        <span id="vol-icon" class="volume-icon">🔊</span>
-        <input 
-          type="range" 
-          id="volume" 
-          class="volume-slider" 
-          min="0" 
-          max="100" 
-          value="80" 
-          oninput="adjustVolume(this.value)"
-        >
-      </div>
+<div class="player-wrapper">
 
-      <div class="status-row">
-        <div class="status-indicator">
-          <div class="pulse-dot"></div>
-          <span>On Air (Global Sync)</span>
-        </div>
-        <div id="sync-status">Status: Ready</div>
-      </div>
-    </div>
-  </div>
-  <script>
-    // Split initialization string bypasses text processing glitches cleanly
-    const tag = document.createElement('script');
-    tag.src = "https:" + "//www." + "youtube." + "com/iframe_api";
-    document.head.appendChild(tag);
+<div id="youtube-player"></div>
 
-    const playlist = [
-      { id: "FZC-XgLk8O4", title: "Into The Wild", artist: "Alex Skrindo, Kovan, Izzy", duration: 194 },
-      { id: "DqUQW3xyQ1c", title: "Fast Lane", artist: "NIVIRO, PollyAnna", duration: 187 },
-      { id: "FseAiTb8Se0", title: "Skyline ", artist: "Kovan, Electro-Light", duration: 231 },
-      { id: "WfluodjOkOk", title: "We Are", artist: "Kisma", duration: 237 },
-      { id: "IS9azbb9hSA", title: "Vitality", artist: "Elektronomia", duration: 251 },
-    ];
+<div class="click-shield"></div>
 
-    const TOTAL_PLAYLIST_DURATION = playlist.reduce((sum, track) => sum + track.duration, 0);
-    
-    let radioActive = false;
-    let player = null;
-    let currentVideoId = "";
+<div id="unlock-overlay" class="unlock-overlay">
+<button class="connect-btn" onclick="connectToRadio()">
+▶ Connect to Radio
+</button>
 
-    function getLiveTrackState() {
-      const currentGlobalSeconds = Math.floor(Date.now() / 1000);
-      let timeIntoCurrentLoop = currentGlobalSeconds % TOTAL_PLAYLIST_DURATION;
-      
-      for (let i = 0; i < playlist.length; i++) {
-        if (timeIntoCurrentLoop < playlist[i].duration) {
-          return {
-            videoId: playlist[i].id,
-            seekTime: timeIntoCurrentLoop,
-            title: playlist[i].title,
-            artist: playlist[i].artist,
-            trackIndex: i
-          };
-        }
-        timeIntoCurrentLoop -= playlist[i].duration;
-      }
-      return { videoId: playlist[0].id, seekTime: 0, title: playlist[0].title, artist: playlist[0].artist, trackIndex: 0 };
+<span style="font-size:12px;color:#86868b;">
+Click to join
+</span>
+</div>
+
+</div>
+
+<div class="track-info">
+<h3 id="track-title" class="track-title">
+NCS Radio
+</h3>
+
+<p id="track-artist" class="track-artist">
+Click to unmute audio
+</p>
+</div>
+
+<div class="controls-panel">
+
+<div class="volume-container">
+
+<span id="vol-icon">
+🔊
+</span>
+
+<input
+id="volume"
+class="volume-slider"
+type="range"
+min="0"
+max="100"
+value="80"
+oninput="adjustVolume(this.value)"
+>
+
+</div>
+
+<div class="status-row">
+
+<div class="status-indicator">
+<div class="pulse-dot"></div>
+<span>On Air (Global Sync)</span>
+</div>
+
+<div id="sync-status">
+Status: Loading...
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const tag=document.createElement("script");
+tag.src="https://www.youtube.com/iframe_api";
+document.head.appendChild(tag);
+
+const playlist=[
+{id:"FZC-XgLk8O4",title:"Into The Wild",artist:"Alex Skrindo, Kovan, Izzy",duration:null},
+{id:"DqUQW3xyQ1c",title:"Fast Lane",artist:"NIVIRO, PollyAnna",duration:null},
+{id:"FseAiTb8Se0",title:"Skyline",artist:"Kovan, Electro-Light",duration:null},
+{id:"WfluodjOkOk",title:"We Are",artist:"Kisma",duration:null},
+{id:"IS9azbb9hSA",title:"Vitality",artist:"Elektronomia",duration:null}
+];
+
+let TOTAL_PLAYLIST_DURATION=0;
+
+let player;
+let radioActive=false;
+let currentVideoId="";
+let durationsLoaded=false;
+let syncTimer=null;
+let loadingDurations=false;
+function loadPlaylistDurations() {
+  if (loadingDurations || durationsLoaded) return;
+
+  loadingDurations = true;
+
+  let tempPlayer = document.createElement("div");
+  tempPlayer.id = "duration-loader";
+  tempPlayer.style.display = "none";
+  document.body.appendChild(tempPlayer);
+
+  let index = 0;
+
+  function loadNextDuration() {
+
+    if (index >= playlist.length) {
+      TOTAL_PLAYLIST_DURATION = playlist.reduce(
+        (sum, track) => sum + track.duration,
+        0
+      );
+
+      durationsLoaded = true;
+      loadingDurations = false;
+
+      document.getElementById("sync-status").innerText =
+        "Status: Live Sync";
+
+      return;
     }
 
-    function onYouTubeIframeAPIReady() {
-      const freshSync = getLiveTrackState();
-      currentVideoId = freshSync.videoId;
 
-      player = new YT.Player('youtube-player', {
-        height: '100%',
-        width: '100%',
-        videoId: freshSync.videoId,
-        playerVars: {
-          'autoplay': 0,
-          'controls': 0,
-          'disablekb': 1,
-          'rel': 0,
-          'start': freshSync.seekTime,
-          'enablejsapi': 1,
-          'iv_load_policy': 3,
-          'fs': 0
+    let video = playlist[index];
+
+
+    let durationPlayer = new YT.Player("duration-loader", {
+
+      videoId: video.id,
+
+      playerVars: {
+        controls: 0,
+        autoplay: 0
+      },
+
+      events: {
+
+        onReady: function(event) {
+
+          video.duration = Math.floor(
+            event.target.getDuration()
+          );
+
+
+          event.target.destroy();
+
+
+          index++;
+
+          loadNextDuration();
+
+        }
+
+      }
+
+    });
+
+  }
+
+
+  loadNextDuration();
+
+}
+
+
+
+function getLiveTrackState() {
+
+  if (!durationsLoaded) {
+
+    return {
+      videoId: playlist[0].id,
+      seekTime: 0,
+      title: playlist[0].title,
+      artist: playlist[0].artist,
+      trackIndex: 0
+    };
+
+  }
+
+
+  const now = Math.floor(Date.now() / 1000);
+
+
+  let loopTime =
+    now % TOTAL_PLAYLIST_DURATION;
+
+
+
+  for (
+    let i = 0;
+    i < playlist.length;
+    i++
+  ) {
+
+
+    if (
+      loopTime <
+      playlist[i].duration
+    ) {
+
+
+      return {
+
+        videoId: playlist[i].id,
+
+        seekTime: loopTime,
+
+        title: playlist[i].title,
+
+        artist: playlist[i].artist,
+
+        trackIndex: i
+
+      };
+
+    }
+
+
+    loopTime -= playlist[i].duration;
+
+
+  }
+
+
+
+  return {
+
+    videoId: playlist[0].id,
+
+    seekTime:0,
+
+    title:playlist[0].title,
+
+    artist:playlist[0].artist,
+
+    trackIndex:0
+
+  };
+
+
+}
+
+
+
+
+function onYouTubeIframeAPIReady() {
+
+
+  player = new YT.Player(
+    "youtube-player",
+    {
+
+
+      height:"100%",
+      width:"100%",
+
+
+      videoId:playlist[0].id,
+
+
+      playerVars:{
+
+        autoplay:0,
+
+        controls:0,
+
+        disablekb:1,
+
+        rel:0,
+
+        enablejsapi:1,
+
+        iv_load_policy:3,
+
+        fs:0
+
+      },
+
+
+      events:{
+
+
+        onReady:function(event){
+
+
+          player.setVolume(
+            document.getElementById("volume").value
+          );
+
+
+          loadPlaylistDurations();
+
+
         },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
-        }
-      });
-    }
 
-    function onPlayerReady(event) {
-      const initialVol = document.getElementById('volume').value;
-      player.setVolume(initialVol);
-    }
 
-    function onPlayerStateChange(event) {
-      if (radioActive && (event.data === YT.PlayerState.ENDED || event.data === YT.PlayerState.PAUSED)) {
-        forceResync();
+        onStateChange:onPlayerStateChange
+
+
       }
+
+
+    }
+  );
+
+
+}
+
+
+
+
+function onPlayerStateChange(event){
+
+
+  if(
+    radioActive &&
+    (
+      event.data === YT.PlayerState.ENDED ||
+      event.data === YT.PlayerState.PAUSED
+    )
+  ){
+
+    forceResync();
+
+  }
+
+
+}
+
+
+
+
+function adjustVolume(value){
+
+
+  const icon =
+    document.getElementById("vol-icon");
+
+
+  if(value == 0){
+
+    icon.innerText="🔇";
+
+  }
+  else if(value < 40){
+
+    icon.innerText="🔈";
+
+  }
+  else if(value < 75){
+
+    icon.innerText="🔉";
+
+  }
+  else {
+
+    icon.innerText="🔊";
+
+  }
+
+
+
+  if(
+    player &&
+    typeof player.setVolume==="function"
+  ){
+
+    player.setVolume(value);
+
+  }
+
+
+}
+  function updateTrackInfo(track) {
+
+  document.getElementById("track-title").innerText =
+    track.title;
+
+  document.getElementById("track-artist").innerText =
+    "By: " + track.artist;
+
+}
+
+
+
+function forceResync() {
+
+
+  if(!player || !durationsLoaded) return;
+
+
+  const freshSync =
+    getLiveTrackState();
+
+
+
+  currentVideoId =
+    freshSync.videoId;
+
+
+
+  updateTrackInfo({
+    title:freshSync.title,
+    artist:freshSync.artist
+  });
+
+
+
+  document.getElementById("sync-status").innerText =
+    "Status: Re-syncing...";
+
+
+
+  player.loadVideoById({
+
+    videoId:freshSync.videoId,
+
+    startSeconds:freshSync.seekTime
+
+  });
+
+
+
+  setTimeout(function(){
+
+
+    if(player){
+
+      player.playVideo();
+
     }
 
-    function adjustVolume(value) {
-      const iconEl = document.getElementById('vol-icon');
-      if (value == 0) iconEl.innerText = "🔇";
-      else if (value < 40) iconEl.innerText = "🔈";
-      else if (value < 75) iconEl.innerText = "🔉";
-      else iconEl.innerText = "🔊";
 
-      if (player && typeof player.setVolume === 'function') {
-        player.setVolume(value);
-      }
-    }
+    document.getElementById("sync-status").innerText =
+      "Status: Live Sync";
 
-    function forceResync() {
-      const freshSync = getLiveTrackState();
-      currentVideoId = freshSync.videoId;
-      
-      document.getElementById('track-title').innerText = freshSync.title;
-      document.getElementById('track-artist').innerText = "By: " + freshSync.artist;
-      document.getElementById('sync-status').innerText = "Status: Re-syncing...";
 
-      if (player && typeof player.loadVideoById === 'function') {
-        player.loadVideoById({
-          videoId: freshSync.videoId,
-          startSeconds: freshSync.seekTime
-        });
-        player.playVideo();
-        document.getElementById('sync-status').innerText = "Status: Live Sync";
-      }
-    }
+  },500);
 
-    function connectToRadio() {
-      radioActive = true;
-      document.getElementById('unlock-overlay').style.display = 'none';
-      forceResync();
 
-      setInterval(function() {
-        if (!radioActive) return;
-        const checkSync = getLiveTrackState();
-        
-        if (checkSync.videoId !== currentVideoId) {
+
+}
+
+
+
+
+
+function checkSync(){
+
+
+  if(
+    !radioActive ||
+    !player ||
+    !durationsLoaded
+  ){
+
+    return;
+
+  }
+
+
+
+  const expected =
+    getLiveTrackState();
+
+
+
+  if(
+    expected.videoId !== currentVideoId
+  ){
+
+    forceResync();
+
+    return;
+
+  }
+
+
+
+  const actual =
+    player.getCurrentTime();
+
+
+
+  const difference =
+    Math.abs(
+      actual - expected.seekTime
+    );
+
+
+
+  /*
+    If the player is more than
+    2 seconds away from the global
+    radio position, correct it.
+  */
+
+
+  if(difference > 2){
+
+
+    document.getElementById("sync-status").innerText =
+      "Status: Correcting drift...";
+
+
+    player.seekTo(
+      expected.seekTime,
+      true
+    );
+    setTimeout(function(){
+      document.getElementById("sync-status").innerText =
+        "Status: Live Sync";
+    },1000);
+  }
+}
+function connectToRadio(){
+  radioActive=true;
+  document.getElementById(
+    "unlock-overlay"
+  ).style.display="none";
+  if(!durationsLoaded){
+    document.getElementById(
+      "sync-status"
+    ).innerText =
+      "Status: Loading tracks...";
+    let wait =
+      setInterval(function(){
+        if(durationsLoaded){
+         clearInterval(wait);
           forceResync();
         }
-      }, 1500);
-    }
-  </script>
+      },250);
+  }
+  else {
+    forceResync();
+  }
+  if(!syncTimer){
+
+
+    syncTimer =
+      setInterval(
+        checkSync,
+        1500
+      );
+  }
+}
+window.addEventListener("beforeunload", function(){
+
+  if(syncTimer){
+
+    clearInterval(syncTimer);
+
+  }
+
+});
+
+
+
+// Safety check:
+// If YouTube API loads late,
+// retry duration loading.
+
+setInterval(function(){
+
+  if(
+    player &&
+    !durationsLoaded &&
+    !loadingDurations
+  ){
+
+    loadPlaylistDurations();
+
+  }
+
+},5000);
+
+
+
+</script>
+
 </body>
 </html>
