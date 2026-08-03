@@ -82,6 +82,9 @@ function findOut() {
     else {
         alert("You are not brain rotted!");
     }
+    if (localStorage.getItem('theme') === 'space') {
+			document.documentElement.style.setProperty('--site-background', 'url("src/stars.gif")');
+		}
 }
 </script>
 </html>
