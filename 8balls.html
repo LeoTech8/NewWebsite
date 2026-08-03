@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern 8 Ball</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="gamble-wrapper">
+    <div class="gamblebox">
+        <div class="title">
+            <h1>🎱 Modern Magic 8 Ball</h1>
+            <p>Ask a yes/no question, then click the button.</p>
+        </div>
+
+        <br>
+
+        <input type="text" id="question" placeholder="Type your question..." style="width:100%;">
+
+        <br><br>
+
+        <button onclick="shakeBall()">Shake 8 Ball</button>
+
+        <br><br>
+
+        <h2 id="answer">Waiting...</h2>
+    </div>
+</div>
+
+<script>
+const answers = [
+    "Bet.",
+    "No cap.",
+    "Fr fr.",
+    "Cooked.",
+    "You're so back.",
+    "It's giving yes.",
+    "It's giving no.",
+    "W.",
+    "L.",
+    "Send it.",
+    "Touch grass first.",
+    "Lowkey yes.",
+    "Highkey no.",
+    "Vibes are immaculate.",
+    "The aura says yes.",
+    "Negative aura.",
+    "Delulu approved.",
+    "Bro, absolutely not.",
+    "Chat says yes.",
+    "Ask again after the update.",
+    "Massive W.",
+    "Certified W.",
+    "Rare L.",
+    "That's peak.",
+    "Big yikes.",
+    "We are so cooked.",
+    "Lock it in.",
+    "Green flag.",
+    "Red flag.",
+    "Canon event.",
+    "NPC decision.",
+    "Main character moment.",
+    "Built different.",
+    "Skill issue.",
+    "That's fire.",
+    "Mid.",
+    "Let him cook.",
+    "Not beating the allegations.",
+    "100% aura.",
+    "The algorithm approves."
+];
+
+function shakeBall() {
+    const answer = answers[Math.floor(Math.random() * answers.length)];
+    document.getElementById("answer").textContent = answer;
+}
+</script>
+
+</body>
+</html>
