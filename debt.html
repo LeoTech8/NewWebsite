@@ -52,5 +52,11 @@ function black() {
     document.getElementById("money").textContent = money;
     }
 
-}</script>
+}
+
+if (localStorage.getItem('theme') === 'space') {
+		document.documentElement.style.setProperty('--site-background', 'url("src/stars.gif")');
+	}
+
+</script>
 </html>
