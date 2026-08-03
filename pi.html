@@ -158,6 +158,10 @@
 
             requestAnimationFrame(renderLoop);
         }
+
+if (localStorage.getItem('theme') === 'space') {
+    document.documentElement.style.setProperty('--site-background', 'url("src/stars.gif")');
+}
     </script>
 
 </body>
